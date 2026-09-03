@@ -1,0 +1,9 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+
+# Local release artifacts stay in the community-project folder and are
+# uploaded as GitHub Releases instead of being committed to source history.
+outputs/

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="base" x1="210" y1="90" x2="810" y2="940" gradientUnits="userSpaceOnUse"><stop stop-color="#303236"/><stop offset="1" stop-color="#0e0f11"/></linearGradient>
+    <linearGradient id="board" x1="512" y1="264" x2="512" y2="764" gradientUnits="userSpaceOnUse"><stop stop-color="#3e4045"/><stop offset="1" stop-color="#242528"/></linearGradient>
+    <linearGradient id="rgb" x1="212" y1="0" x2="812" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#297bf5"/><stop offset=".52" stop-color="#5945d4"/><stop offset="1" stop-color="#16a18f"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-25%" width="140%" height="160%"><feDropShadow dy="18" stdDeviation="18" flood-opacity=".5"/></filter>
+  </defs>
+  <rect x="36" y="36" width="952" height="952" rx="224" fill="url(#base)"/>
+  <rect x="54" y="54" width="916" height="916" rx="207" fill="none" stroke="#fff" stroke-opacity=".08" stroke-width="3"/>
+  <rect x="132" y="264" width="760" height="500" rx="72" fill="url(#board)" stroke="#fff" stroke-opacity=".16" stroke-width="3" filter="url(#shadow)"/>
+  <g fill="#131416" stroke="#fff" stroke-opacity=".16" stroke-width="2">
+    <rect x="184" y="328" width="48" height="42" rx="10"/><rect x="246" y="328" width="48" height="42" rx="10"/><rect x="308" y="328" width="48" height="42" rx="10" fill="#297bf5"/><rect x="370" y="328" width="48" height="42" rx="10"/><rect x="432" y="328" width="48" height="42" rx="10"/><rect x="494" y="328" width="48" height="42" rx="10"/><rect x="556" y="328" width="48" height="42" rx="10" fill="#5945d4"/><rect x="618" y="328" width="48" height="42" rx="10"/><rect x="680" y="328" width="48" height="42" rx="10"/><rect x="742" y="328" width="48" height="42" rx="10" fill="#16a18f"/><rect x="804" y="328" width="48" height="42" rx="10"/>
+    <path d="M184 400h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zM194 482h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zM204 564h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50zm62 0h50v58h-50z"/>
+    <rect x="184" y="646" width="92" height="58" rx="13"/><rect x="290" y="646" width="58" height="58" rx="13"/><rect x="362" y="646" width="300" height="58" rx="13"/><rect x="676" y="646" width="58" height="58" rx="13"/><rect x="748" y="646" width="92" height="58" rx="13"/>
+  </g>
+  <rect x="212" y="731" width="600" height="8" rx="4" fill="url(#rgb)"/>
+  <circle cx="826" cy="309" r="9" fill="#4ac778"/>
+  <text x="512" y="686" text-anchor="middle" fill="#fff" fill-opacity=".88" font-family="-apple-system,Helvetica,sans-serif" font-size="34" font-weight="600" letter-spacing="3">F87</text>
+</svg>
