@@ -19,35 +19,84 @@ struct HardwareKeyboardBackdrop: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
+                // The darker lower shell stays visible beneath the aluminum top
+                // plate and gives the keyboard a real front edge.
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(Color(red: 0.21, green: 0.22, blue: 0.235))
+                    .offset(y: 5)
+
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(red: 0.78, green: 0.79, blue: 0.80),
-                                Color(red: 0.48, green: 0.50, blue: 0.52)
+                                Color(red: 0.89, green: 0.90, blue: 0.91),
+                                Color(red: 0.69, green: 0.71, blue: 0.73),
+                                Color(red: 0.47, green: 0.49, blue: 0.52)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
+                    .padding(.bottom, 5)
+
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(
+                        LinearGradient(colors: [.white.opacity(0.82), .black.opacity(0.32)],
+                                       startPoint: .top, endPoint: .bottom),
+                        lineWidth: 1
+                    )
+                    .padding(1)
+                    .padding(.bottom, 5)
 
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color(red: 0.055, green: 0.06, blue: 0.065))
-                    .padding(8)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.035, green: 0.038, blue: 0.043),
+                                Color(red: 0.075, green: 0.08, blue: 0.087)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .padding(.top, 8)
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 12)
                     .overlay {
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .stroke(.white.opacity(0.10), lineWidth: 1)
-                            .padding(8)
+                            .stroke(.black.opacity(0.62), lineWidth: 2)
+                            .padding(.top, 8)
+                            .padding(.horizontal, 8)
+                            .padding(.bottom, 12)
                     }
 
+                // A soft reflection across the rear edge makes the deck look
+                // inset rather than printed onto a flat rectangle.
+                LinearGradient(colors: [.white.opacity(0.24), .clear],
+                               startPoint: .top, endPoint: .bottom)
+                    .frame(height: 7)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .padding(.horizontal, 12)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .padding(.top, 9)
+
                 VStack(spacing: 0) {
-                    HStack(spacing: 4) {
-                        Text("F87")
-                            .font(.system(size: 7.5, weight: .bold, design: .rounded))
-                            .tracking(0.6)
-                        Circle().fill(.green.opacity(0.85)).frame(width: 3, height: 3)
+                    HStack {
+                        HStack(spacing: 4) {
+                            Text("F87")
+                                .font(.system(size: 7.5, weight: .bold, design: .rounded))
+                                .tracking(0.6)
+                            Circle().fill(.green.opacity(0.90)).frame(width: 3, height: 3)
+                        }
+                        Spacer()
+                        HStack(spacing: 3) {
+                            Circle().fill(.white.opacity(0.45)).frame(width: 2.5, height: 2.5)
+                            Circle().fill(.white.opacity(0.24)).frame(width: 2.5, height: 2.5)
+                            Circle().fill(.white.opacity(0.24)).frame(width: 2.5, height: 2.5)
+                        }
                     }
                     .foregroundStyle(.white.opacity(0.52))
+                    .padding(.horizontal, 20)
                     .padding(.top, 5)
                     Spacer()
                     Capsule()
@@ -58,16 +107,13 @@ struct HardwareKeyboardBackdrop: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: min(210, proxy.size.width * 0.30), height: 2)
-                        .shadow(color: .cyan.opacity(0.55), radius: 3)
-                        .padding(.bottom, 5)
+                        .frame(width: min(230, proxy.size.width * 0.30), height: 2.5)
+                        .overlay(Capsule().fill(.white.opacity(0.28)).frame(height: 0.7), alignment: .top)
+                        .shadow(color: .cyan.opacity(0.62), radius: 4)
+                        .padding(.bottom, 3)
                 }
             }
-            .overlay {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(.white.opacity(0.24), lineWidth: 1)
-            }
-            .shadow(color: .black.opacity(0.34), radius: 12, y: 7)
+            .shadow(color: .black.opacity(0.44), radius: 14, y: 9)
         }
         .allowsHitTesting(false)
     }
@@ -93,7 +139,7 @@ extension View {
 }
 
 enum StudioSection: String, CaseIterable, Identifiable {
-    case lighting, perKey, profiles, music, settings, help
+    case lighting, perKey, profiles, music, functionKeys, settings, help
 
     var id: String { rawValue }
     var title: String {
@@ -102,6 +148,7 @@ enum StudioSection: String, CaseIterable, Identifiable {
         case .perKey: return "Per-key RGB"
         case .profiles: return "Profiles"
         case .music: return "Music mode"
+        case .functionKeys: return "Mac function keys"
         case .settings: return "Keyboard settings"
         case .help: return "About & help"
         }
@@ -112,6 +159,7 @@ enum StudioSection: String, CaseIterable, Identifiable {
         case .perKey: return "keyboard.fill"
         case .profiles: return "square.stack.3d.up.fill"
         case .music: return "waveform"
+        case .functionKeys: return "command.square.fill"
         case .settings: return "slider.horizontal.3"
         case .help: return "questionmark.circle.fill"
         }
@@ -122,8 +170,9 @@ enum StudioSection: String, CaseIterable, Identifiable {
         case .perKey: return "2"
         case .profiles: return "3"
         case .music: return "4"
-        case .settings: return "5"
-        case .help: return "6"
+        case .functionKeys: return "5"
+        case .settings: return "6"
+        case .help: return "7"
         }
     }
 }
@@ -144,6 +193,7 @@ struct RootView: View {
                     case .perKey: PerKeyView()
                     case .profiles: ProfileLibraryView()
                     case .music: MusicModeView()
+                    case .functionKeys: FunctionKeysView()
                     case .settings: SettingsView()
                     case .help: HelpView()
                     case .lighting: LightingView()
@@ -228,6 +278,7 @@ private struct StudioSectionPicker: View {
     private func tabTitle(for section: StudioSection) -> String {
         switch section {
         case .music: return "Music"
+        case .functionKeys: return "F-keys"
         case .settings: return "Settings"
         case .help: return "Help"
         default: return section.title
@@ -849,31 +900,51 @@ struct KeyboardKeyButton: View {
                         .shadow(color: assigned.color.opacity(0.85), radius: 4)
                 }
 
+                // Sidewall: deliberately visible below the smaller top face.
                 RoundedRectangle(cornerRadius: 6, style: .continuous)
                     .fill(
                         LinearGradient(
-                            colors: [StudioUI.keycapTop, StudioUI.keycapBottom],
+                            colors: [Color(red: 0.15, green: 0.155, blue: 0.165),
+                                     Color(red: 0.045, green: 0.048, blue: 0.052)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .padding(.horizontal, 2)
+                    .padding(.top, 3)
+                    .padding(.bottom, 1)
+                    .shadow(color: .black.opacity(0.80), radius: 2, y: 2)
+
+                RoundedRectangle(cornerRadius: 5.5, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color(red: 0.32, green: 0.325, blue: 0.335),
+                                     StudioUI.keycapTop,
+                                     StudioUI.keycapBottom],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
                     .overlay {
                         if let assigned {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(assigned.color.opacity(0.16))
+                            RoundedRectangle(cornerRadius: 5.5, style: .continuous)
+                                .fill(assigned.color.opacity(0.18))
                         }
                     }
                     .overlay(alignment: .top) {
                         RoundedRectangle(cornerRadius: 5, style: .continuous)
-                            .stroke(.white.opacity(0.16), lineWidth: 1)
-                            .padding(1)
+                            .stroke(.white.opacity(0.29), lineWidth: 0.8)
                     }
-                    .padding(2)
-                    .shadow(color: .black.opacity(0.72), radius: 1.5, y: 2)
+                    .padding(.horizontal, 2)
+                    .padding(.top, 1)
+                    .padding(.bottom, 5)
+                    .shadow(color: .black.opacity(0.50), radius: 1, y: 1)
 
                 Text(key.label)
                     .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                     .foregroundStyle(textColor)
+                    .offset(y: -1.5)
+                    .shadow(color: .black.opacity(0.75), radius: 0.5, y: 1)
             }
             .frame(width: keyWidth, height: unit)
             .overlay {
@@ -1163,7 +1234,7 @@ struct MusicModeView: View {
                                         status: "No validated 3554:FA09 packets available; keyboard shortcuts remain the safe control", available: false)
                     Divider().padding(.leading, 58)
                     CapabilityStatusRow(title: "Mac function row & macros", symbol: "command.square.fill",
-                                        status: model.functionRowController.isRunning ? "Active through the safe host-side mapper" : "Available in Keyboard settings",
+                                        status: model.functionRowController.isRunning ? "Active through the safe host-side mapper" : "Available in Mac function keys",
                                         available: model.functionRowController.isRunning)
                 }
                 .studioCard(radius: 12)
@@ -1227,11 +1298,9 @@ struct SettingsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 PageHeader(eyebrow: "Device", title: "Keyboard",
-                           subtitle: "Configure the function row, connection behavior, and supported onboard settings.")
+                           subtitle: "Manage connection behavior and supported onboard settings.")
 
                 ConnectionHealthView()
-
-                FunctionRowSettingsView(controller: model.functionRowController)
 
                 VStack(spacing: 0) {
                     SettingCard(icon: "powersleep", title: "Sleep timer",
@@ -1293,6 +1362,26 @@ struct SettingsView: View {
             Button("Restore", role: .destructive) { model.factoryReset() }
         } message: {
             Text("This replaces saved lighting, per-key colors, sleep, and debounce settings on the keyboard. Key assignments are not changed.")
+        }
+    }
+}
+
+struct FunctionKeysView: View {
+    @EnvironmentObject private var model: AppModel
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                PageHeader(
+                    eyebrow: "Host controls",
+                    title: "Mac function keys",
+                    subtitle: "Turn F1–F12 into MacBook-style controls and useful shortcuts without changing the keyboard firmware."
+                )
+                FunctionRowSettingsView(controller: model.functionRowController)
+            }
+            .frame(maxWidth: 1120)
+            .frame(maxWidth: .infinity)
+            .padding(30)
         }
     }
 }
@@ -1689,7 +1778,7 @@ struct HelpView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                PageHeader(eyebrow: "F87 Studio 4.4.0", title: "About F87 Studio",
+                PageHeader(eyebrow: "F87 Studio 4.5.0", title: "About F87 Studio",
                            subtitle: "A focused, independent macOS controller for the AULA F87 family.")
 
                 HelpRow(number: "1", title: "Use USB or a supported 2.4 GHz receiver",

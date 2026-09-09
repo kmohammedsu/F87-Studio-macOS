@@ -74,7 +74,7 @@ struct EffectKeyboardPreview: View {
                                     Text(key.label)
                                         .font(.system(size: 9.2, weight: .semibold, design: .rounded))
                                         .foregroundColor(.white.opacity(effect.id == 0 || brightness == 0 ? 0.72 : 0.95)),
-                                    at: CGPoint(x: rect.midX, y: rect.midY)
+                                    at: CGPoint(x: rect.midX, y: rect.midY - 1.5)
                                 )
                                 x += width
                             }
@@ -113,28 +113,60 @@ struct EffectKeyboardPreview: View {
     }
 
     private func drawChassis(context: inout GraphicsContext, size: CGSize) {
-        let outerRect = CGRect(origin: .zero, size: size).insetBy(dx: 1, dy: 1)
+        let lowerRect = CGRect(x: 1, y: 6, width: size.width - 2, height: size.height - 7)
+        let lowerShell = Path(roundedRect: lowerRect, cornerRadius: 18)
+        context.fill(lowerShell, with: .color(Color(red: 0.20, green: 0.21, blue: 0.225)))
+
+        let outerRect = CGRect(x: 1, y: 1, width: size.width - 2, height: size.height - 7)
         let outer = Path(roundedRect: outerRect, cornerRadius: 18)
         context.fill(
             outer,
             with: .linearGradient(
                 Gradient(colors: [
-                    Color(red: 0.80, green: 0.81, blue: 0.82),
+                    Color(red: 0.90, green: 0.91, blue: 0.92),
+                    Color(red: 0.69, green: 0.71, blue: 0.73),
                     Color(red: 0.47, green: 0.49, blue: 0.51)
                 ]),
                 startPoint: CGPoint(x: size.width / 2, y: 0),
                 endPoint: CGPoint(x: size.width / 2, y: size.height)
             )
         )
-        context.stroke(outer, with: .color(.white.opacity(0.30)), lineWidth: 1)
+        context.stroke(outer, with: .color(.white.opacity(0.70)), lineWidth: 1)
 
-        let deckRect = outerRect.insetBy(dx: 8, dy: 8)
+        let deckRect = CGRect(x: outerRect.minX + 8, y: outerRect.minY + 8,
+                              width: outerRect.width - 16, height: outerRect.height - 20)
         let deck = Path(roundedRect: deckRect, cornerRadius: 13)
-        context.fill(deck, with: .color(Color(red: 0.045, green: 0.05, blue: 0.055)))
-        context.stroke(deck, with: .color(.white.opacity(0.10)), lineWidth: 1)
+        context.fill(
+            deck,
+            with: .linearGradient(
+                Gradient(colors: [Color(red: 0.03, green: 0.034, blue: 0.038),
+                                  Color(red: 0.075, green: 0.08, blue: 0.088)]),
+                startPoint: CGPoint(x: deckRect.midX, y: deckRect.minY),
+                endPoint: CGPoint(x: deckRect.midX, y: deckRect.maxY)
+            )
+        )
+        context.stroke(deck, with: .color(.black.opacity(0.70)), lineWidth: 2)
 
-        let accentRect = CGRect(x: size.width * 0.37, y: size.height - 7,
-                                width: size.width * 0.26, height: 2)
+        let rearHighlight = CGRect(x: deckRect.minX + 4, y: deckRect.minY + 2,
+                                   width: deckRect.width - 8, height: 1)
+        context.fill(Path(roundedRect: rearHighlight, cornerRadius: 0.5),
+                     with: .color(.white.opacity(0.18)))
+
+        context.draw(
+            Text("F87")
+                .font(.system(size: 7, weight: .bold, design: .rounded))
+                .foregroundColor(.white.opacity(0.46)),
+            at: CGPoint(x: 31, y: 11)
+        )
+        for index in 0..<3 {
+            let indicator = CGRect(x: size.width - 29 + CGFloat(index * 5), y: 9.5,
+                                   width: 2.5, height: 2.5)
+            context.fill(Path(ellipseIn: indicator),
+                         with: .color(index == 0 ? .green.opacity(0.86) : .white.opacity(0.22)))
+        }
+
+        let accentRect = CGRect(x: size.width * 0.37, y: size.height - 5,
+                                width: size.width * 0.26, height: 2.5)
         context.fill(
             Path(roundedRect: accentRect, cornerRadius: 1),
             with: .linearGradient(
@@ -150,12 +182,28 @@ struct EffectKeyboardPreview: View {
         let glow = Path(roundedRect: glowRect, cornerRadius: 7)
         context.fill(glow, with: .color(isLit ? light.opacity(0.92) : .clear))
 
-        let capRect = rect.insetBy(dx: 2, dy: 2)
-        let cap = Path(roundedRect: capRect, cornerRadius: 5.5)
+        let sideRect = CGRect(x: rect.minX + 2, y: rect.minY + 3,
+                              width: rect.width - 4, height: rect.height - 4)
+        let side = Path(roundedRect: sideRect, cornerRadius: 5.5)
+        context.fill(
+            side,
+            with: .linearGradient(
+                Gradient(colors: [Color(red: 0.15, green: 0.155, blue: 0.165),
+                                  Color(red: 0.035, green: 0.038, blue: 0.043)]),
+                startPoint: CGPoint(x: sideRect.midX, y: sideRect.minY),
+                endPoint: CGPoint(x: sideRect.midX, y: sideRect.maxY)
+            )
+        )
+
+        let capRect = CGRect(x: rect.minX + 2, y: rect.minY + 1,
+                             width: rect.width - 4, height: rect.height - 6)
+        let cap = Path(roundedRect: capRect, cornerRadius: 5)
         context.fill(
             cap,
             with: .linearGradient(
-                Gradient(colors: [StudioUI.keycapTop, StudioUI.keycapBottom]),
+                Gradient(colors: [Color(red: 0.33, green: 0.335, blue: 0.345),
+                                  StudioUI.keycapTop,
+                                  StudioUI.keycapBottom]),
                 startPoint: CGPoint(x: capRect.midX, y: capRect.minY),
                 endPoint: CGPoint(x: capRect.midX, y: capRect.maxY)
             )
@@ -167,8 +215,8 @@ struct EffectKeyboardPreview: View {
             context.stroke(cap, with: .color(.white.opacity(0.14)), lineWidth: 0.8)
         }
 
-        let topHighlight = CGRect(x: capRect.minX + 4, y: capRect.minY + 2,
-                                  width: max(0, capRect.width - 8), height: 0.8)
+        let topHighlight = CGRect(x: capRect.minX + 4, y: capRect.minY + 1.5,
+                                  width: max(0, capRect.width - 8), height: 0.9)
         context.fill(Path(roundedRect: topHighlight, cornerRadius: 0.4),
                      with: .color(.white.opacity(0.17)))
     }
