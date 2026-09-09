@@ -9,8 +9,8 @@
     <key>CFBundleName</key><string>F87 Studio</string>
     <key>CFBundleDisplayName</key><string>F87 Studio</string>
     <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>4.3.1</string>
-    <key>CFBundleVersion</key><string>26</string>
+    <key>CFBundleShortVersionString</key><string>4.4.0</string>
+    <key>CFBundleVersion</key><string>27</string>
     <key>NSInputMonitoringUsageDescription</key>
     <string>F87 Studio uses Input Monitoring permission only to open the AULA keyboard's vendor configuration channel. It does not monitor or record keystrokes.</string>
     <key>NSMicrophoneUsageDescription</key>

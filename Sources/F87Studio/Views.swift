@@ -9,6 +9,68 @@ enum StudioUI {
     static let separator = Color(nsColor: .separatorColor)
     static let keyboardDeck = Color(nsColor: .underPageBackgroundColor)
     static let mutedAccent = Color.accentColor.opacity(0.11)
+    static let keycapTop = Color(red: 0.23, green: 0.24, blue: 0.25)
+    static let keycapBottom = Color(red: 0.105, green: 0.11, blue: 0.12)
+}
+
+/// A product-like shell shared by the interactive keyboard canvas. The RGB
+/// belongs around the keycaps, while the caps themselves remain legible.
+struct HardwareKeyboardBackdrop: View {
+    var body: some View {
+        GeometryReader { proxy in
+            ZStack {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.78, green: 0.79, blue: 0.80),
+                                Color(red: 0.48, green: 0.50, blue: 0.52)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color(red: 0.055, green: 0.06, blue: 0.065))
+                    .padding(8)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(.white.opacity(0.10), lineWidth: 1)
+                            .padding(8)
+                    }
+
+                VStack(spacing: 0) {
+                    HStack(spacing: 4) {
+                        Text("F87")
+                            .font(.system(size: 7.5, weight: .bold, design: .rounded))
+                            .tracking(0.6)
+                        Circle().fill(.green.opacity(0.85)).frame(width: 3, height: 3)
+                    }
+                    .foregroundStyle(.white.opacity(0.52))
+                    .padding(.top, 5)
+                    Spacer()
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: [.cyan, .blue, .purple, .pink, .orange],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: min(210, proxy.size.width * 0.30), height: 2)
+                        .shadow(color: .cyan.opacity(0.55), radius: 3)
+                        .padding(.bottom, 5)
+                }
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(.white.opacity(0.24), lineWidth: 1)
+            }
+            .shadow(color: .black.opacity(0.34), radius: 12, y: 7)
+        }
+        .allowsHitTesting(false)
+    }
 }
 
 struct StudioCardModifier: ViewModifier {
@@ -715,8 +777,7 @@ struct PerKeyView: View {
                             }
                         }
                         .padding(18)
-                        .background(StudioUI.keyboardDeck, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(StudioUI.separator))
+                        .background { HardwareKeyboardBackdrop() }
                         .contentShape(Rectangle())
                         .highPriorityGesture(
                             DragGesture(minimumDistance: 0)
@@ -780,13 +841,46 @@ struct KeyboardKeyButton: View {
 
     var body: some View {
         Button { model.paint(key: key) } label: {
-            Text(key.label)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(textColor)
-                .frame(width: unit * key.width + (key.width - 1) * 6, height: unit)
-                .background(background, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 7).stroke(strokeColor,
-                                                                 lineWidth: model.selectedLEDs.contains(key.led) ? 2.5 : (isHovering ? 2 : 1)))
+            ZStack {
+                if let assigned {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(assigned.color.opacity(0.92))
+                        .padding(1)
+                        .shadow(color: assigned.color.opacity(0.85), radius: 4)
+                }
+
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [StudioUI.keycapTop, StudioUI.keycapBottom],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .overlay {
+                        if let assigned {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(assigned.color.opacity(0.16))
+                        }
+                    }
+                    .overlay(alignment: .top) {
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .stroke(.white.opacity(0.16), lineWidth: 1)
+                            .padding(1)
+                    }
+                    .padding(2)
+                    .shadow(color: .black.opacity(0.72), radius: 1.5, y: 2)
+
+                Text(key.label)
+                    .font(.system(size: 10.5, weight: .semibold, design: .rounded))
+                    .foregroundStyle(textColor)
+            }
+            .frame(width: keyWidth, height: unit)
+            .overlay {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .stroke(strokeColor,
+                            lineWidth: model.selectedLEDs.contains(key.led) ? 2.5 : (isHovering ? 2 : 0.75))
+            }
         }
         .buttonStyle(.plain)
         .help("\(model.perKeyTool.title) \(key.label) · LED \(key.led) · Shift-click to select")
@@ -795,15 +889,14 @@ struct KeyboardKeyButton: View {
     }
 
     private var assigned: RGBColor? { model.perKeyColors[key.led] }
-    private var background: Color { assigned?.color ?? Color(white: 0.13) }
+    private var keyWidth: CGFloat { unit * key.width + (key.width - 1) * 6 }
     private var strokeColor: Color {
         if model.selectedLEDs.contains(key.led) { return .yellow }
-        return isHovering ? StudioUI.accent : StudioUI.separator
+        if isHovering { return StudioUI.accent }
+        return assigned?.color.opacity(0.72) ?? .white.opacity(0.13)
     }
     private var textColor: Color {
-        guard let assigned else { return .white.opacity(0.82) }
-        let luminance = Double(assigned.red) * 0.299 + Double(assigned.green) * 0.587 + Double(assigned.blue) * 0.114
-        return luminance > 150 ? .black.opacity(0.78) : .white
+        assigned == nil ? .white.opacity(0.80) : .white.opacity(0.96)
     }
 }
 
@@ -1596,7 +1689,7 @@ struct HelpView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                PageHeader(eyebrow: "F87 Studio 4.3.1", title: "About F87 Studio",
+                PageHeader(eyebrow: "F87 Studio 4.4.0", title: "About F87 Studio",
                            subtitle: "A focused, independent macOS controller for the AULA F87 family.")
 
                 HelpRow(number: "1", title: "Use USB or a supported 2.4 GHz receiver",

@@ -54,7 +54,8 @@ struct EffectKeyboardPreview: View {
         TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: !isAnimated)) { timeline in
             ScrollView(.horizontal) {
                 let elapsed = timeline.date.timeIntervalSinceReferenceDate
-                Canvas { context, _ in
+                Canvas { context, size in
+                    drawChassis(context: &context, size: size)
                     var y: CGFloat = 18
                     for (rowIndex, row) in F87Layout.rows.enumerated() {
                         var x: CGFloat = 18
@@ -65,15 +66,14 @@ struct EffectKeyboardPreview: View {
                             case .key(let key):
                                 let width = unit * key.width + (key.width - 1) * 6
                                 let rect = CGRect(x: x, y: y, width: width, height: unit)
-                                let path = Path(roundedRect: rect, cornerRadius: 6)
-                                context.fill(path, with: .color(keyColor(
-                                    row: rowIndex, column: column, led: key.led, elapsed: elapsed
-                                )))
-                                context.stroke(path, with: .color(.white.opacity(0.20)), lineWidth: 1)
+                                let light = keyColor(row: rowIndex, column: column,
+                                                     led: key.led, elapsed: elapsed)
+                                drawKey(context: &context, rect: rect, light: light,
+                                        isLit: effect.id != 0 && brightness > 0)
                                 context.draw(
                                     Text(key.label)
-                                        .font(.system(size: 9.5, weight: .medium))
-                                        .foregroundColor(.white.opacity(effect.id == 0 || brightness == 0 ? 0.76 : 0.96)),
+                                        .font(.system(size: 9.2, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.white.opacity(effect.id == 0 || brightness == 0 ? 0.72 : 0.95)),
                                     at: CGPoint(x: rect.midX, y: rect.midY)
                                 )
                                 x += width
@@ -84,8 +84,6 @@ struct EffectKeyboardPreview: View {
                     }
                 }
                 .frame(width: max(748, canvasWidth), height: canvasHeight)
-                .background(StudioUI.keyboardDeck, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(StudioUI.separator))
             }
             .scrollIndicators(.hidden)
         }
@@ -112,6 +110,67 @@ struct EffectKeyboardPreview: View {
 
     private var isAnimated: Bool {
         effect.id != 0 && effect.id != 1 && brightness > 0
+    }
+
+    private func drawChassis(context: inout GraphicsContext, size: CGSize) {
+        let outerRect = CGRect(origin: .zero, size: size).insetBy(dx: 1, dy: 1)
+        let outer = Path(roundedRect: outerRect, cornerRadius: 18)
+        context.fill(
+            outer,
+            with: .linearGradient(
+                Gradient(colors: [
+                    Color(red: 0.80, green: 0.81, blue: 0.82),
+                    Color(red: 0.47, green: 0.49, blue: 0.51)
+                ]),
+                startPoint: CGPoint(x: size.width / 2, y: 0),
+                endPoint: CGPoint(x: size.width / 2, y: size.height)
+            )
+        )
+        context.stroke(outer, with: .color(.white.opacity(0.30)), lineWidth: 1)
+
+        let deckRect = outerRect.insetBy(dx: 8, dy: 8)
+        let deck = Path(roundedRect: deckRect, cornerRadius: 13)
+        context.fill(deck, with: .color(Color(red: 0.045, green: 0.05, blue: 0.055)))
+        context.stroke(deck, with: .color(.white.opacity(0.10)), lineWidth: 1)
+
+        let accentRect = CGRect(x: size.width * 0.37, y: size.height - 7,
+                                width: size.width * 0.26, height: 2)
+        context.fill(
+            Path(roundedRect: accentRect, cornerRadius: 1),
+            with: .linearGradient(
+                Gradient(colors: [.cyan, .blue, .purple, .pink, .orange]),
+                startPoint: CGPoint(x: accentRect.minX, y: accentRect.midY),
+                endPoint: CGPoint(x: accentRect.maxX, y: accentRect.midY)
+            )
+        )
+    }
+
+    private func drawKey(context: inout GraphicsContext, rect: CGRect, light: Color, isLit: Bool) {
+        let glowRect = rect.insetBy(dx: -1, dy: -1)
+        let glow = Path(roundedRect: glowRect, cornerRadius: 7)
+        context.fill(glow, with: .color(isLit ? light.opacity(0.92) : .clear))
+
+        let capRect = rect.insetBy(dx: 2, dy: 2)
+        let cap = Path(roundedRect: capRect, cornerRadius: 5.5)
+        context.fill(
+            cap,
+            with: .linearGradient(
+                Gradient(colors: [StudioUI.keycapTop, StudioUI.keycapBottom]),
+                startPoint: CGPoint(x: capRect.midX, y: capRect.minY),
+                endPoint: CGPoint(x: capRect.midX, y: capRect.maxY)
+            )
+        )
+        if isLit {
+            context.fill(cap, with: .color(light.opacity(0.18)))
+            context.stroke(cap, with: .color(light.opacity(0.72)), lineWidth: 0.8)
+        } else {
+            context.stroke(cap, with: .color(.white.opacity(0.14)), lineWidth: 0.8)
+        }
+
+        let topHighlight = CGRect(x: capRect.minX + 4, y: capRect.minY + 2,
+                                  width: max(0, capRect.width - 8), height: 0.8)
+        context.fill(Path(roundedRect: topHighlight, cornerRadius: 0.4),
+                     with: .color(.white.opacity(0.17)))
     }
 
     private func keyColor(row: Int, column: Int, led: Int, elapsed: TimeInterval) -> Color {

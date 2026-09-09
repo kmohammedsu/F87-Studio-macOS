@@ -9,6 +9,7 @@ F87 Studio is a self-contained native macOS controller for AULA F87/F87 Pro keyb
 - matching Per-key Workbench with a compact tool inspector, persistent F87 canvas, and visible paint/selection status
 - firmware-supported onboard lighting modes, brightness, speed, single-color and colorful variants
 - animated on-screen effect simulation before anything is sent to the keyboard
+- product-style F87 visualization with a metallic chassis, recessed deck, raised keycaps, and RGB underglow in both lighting workbenches
 - a fixed, carefully composed window that prevents stretched preview surfaces
 - always-visible Lighting and Per-key apply actions in the window toolbar, including an explicit “Turn Lights Off” state
 - low-latency tactile controls, Command-1 through Command-6 navigation, instant screen changes, and a single-canvas 30 FPS preview
