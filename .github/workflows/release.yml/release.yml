@@ -1,0 +1,117 @@
+name: Signed Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: signed-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Verify release version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          APP_VERSION="$(plutil -extract CFBundleShortVersionString raw Resources/Info.plist)"
+          test "$TAG_VERSION" = "$APP_VERSION"
+
+      - name: Import Developer ID identity
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_APPLICATION_P12_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH="$RUNNER_TEMP/developer-id.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/f87-release.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+
+          printf '%s' "$CERTIFICATE_BASE64" | base64 -D > "$CERTIFICATE_PATH"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security import "$CERTIFICATE_PATH" -k "$KEYCHAIN_PATH" \
+            -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+
+          IDENTITY="$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" \
+            | awk -F '"' '/Developer ID Application/{print $2; exit}')"
+          test -n "$IDENTITY"
+          echo "CODESIGN_IDENTITY=$IDENTITY" >> "$GITHUB_ENV"
+
+      - name: Build universal app
+        run: ./scripts/build_app.sh
+
+      - name: Sign with hardened runtime and secure timestamp
+        run: |
+          APP_PATH="outputs/F87 Studio.app"
+          SIGNED=0
+          for ATTEMPT in 1 2 3 4; do
+            if codesign --force --options runtime --timestamp \
+              --entitlements Resources/F87Studio.entitlements \
+              --sign "$CODESIGN_IDENTITY" "$APP_PATH"; then
+              SIGNED=1
+              break
+            fi
+            sleep $((ATTEMPT * 5))
+          done
+          test "$SIGNED" -eq 1
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          codesign -dvv "$APP_PATH" 2>&1 | grep 'Timestamp='
+
+      - name: Prepare App Store Connect API key
+        env:
+          API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        run: |
+          API_KEY_PATH="$RUNNER_TEMP/AuthKey_$API_KEY_ID.p8"
+          printf '%s' "$API_KEY_BASE64" | base64 -D > "$API_KEY_PATH"
+          chmod 600 "$API_KEY_PATH"
+          echo "APPLE_API_KEY_PATH=$API_KEY_PATH" >> "$GITHUB_ENV"
+
+      - name: Notarize, staple, and verify
+        env:
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          APP_PATH="outputs/F87 Studio.app"
+          ARCHIVE_PATH="outputs/F87-Studio-macOS.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ARCHIVE_PATH"
+
+          xcrun notarytool submit "$ARCHIVE_PATH" \
+            --key "$APPLE_API_KEY_PATH" \
+            --key-id "$API_KEY_ID" \
+            --issuer "$API_ISSUER_ID" \
+            --wait
+
+          xcrun stapler staple "$APP_PATH"
+          xcrun stapler validate "$APP_PATH"
+          spctl --assess --type execute --verbose=4 "$APP_PATH"
+
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$ARCHIVE_PATH"
+          shasum -a 256 "$ARCHIVE_PATH"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ARCHIVE_PATH="outputs/F87-Studio-macOS.zip"
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ARCHIVE_PATH" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$ARCHIVE_PATH" \
+              --title "F87 Studio ${GITHUB_REF_NAME#v}" \
+              --generate-notes
+          fi

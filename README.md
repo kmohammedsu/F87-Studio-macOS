@@ -84,7 +84,17 @@ The build script creates `outputs/F87 Studio.app` and a shareable ZIP archive.
 The packaged app is universal and supports both Apple-silicon and Intel Macs running macOS 13 or later.
 Local release builds embed a stable designated requirement for `studio.f87.mac`, so replacing the app with a later build does not create a new Input Monitoring identity.
 
-For a Developer ID-signed and notarized distribution, first store App Store Connect credentials with `xcrun notarytool store-credentials`, then set `F87_SIGN_IDENTITY` and `F87_NOTARY_PROFILE` and run `./scripts/release_notarized.sh`. An active Apple Developer certificate is required; the project cannot create or impersonate one.
+Tagged releases are built by `.github/workflows/release.yml`, signed with the maintainer's Developer ID Application identity, submitted to Apple's notary service, stapled, verified with Gatekeeper, and attached to the matching GitHub release. The workflow requires these repository secrets:
+
+| Secret | Value |
+|---|---|
+| `DEVELOPER_ID_APPLICATION_P12_BASE64` | Base64-encoded Developer ID certificate and private key exported as `.p12` |
+| `DEVELOPER_ID_APPLICATION_P12_PASSWORD` | Password used when exporting that `.p12` |
+| `APP_STORE_CONNECT_API_KEY_BASE64` | Base64-encoded App Store Connect API private key |
+| `APP_STORE_CONNECT_API_KEY_ID` | App Store Connect API key ID |
+| `APP_STORE_CONNECT_ISSUER_ID` | App Store Connect issuer ID |
+
+For a one-off local notarized build, store an API credential with `xcrun notarytool store-credentials`, set `F87_SIGN_IDENTITY` and `F87_NOTARY_PROFILE`, then run `./scripts/release_notarized.sh`.
 
 The app uses HIDAPI 0.15.0 under its BSD license. Protocol behavior was independently implemented from public reverse-engineering documentation by the AULA open-source community.
 
