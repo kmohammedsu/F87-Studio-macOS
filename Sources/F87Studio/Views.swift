@@ -129,6 +129,7 @@ struct StudioCardModifier: ViewModifier {
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
                     .stroke(StudioUI.separator.opacity(0.46), lineWidth: 1)
             }
+            .shadow(color: .black.opacity(0.055), radius: 9, y: 3)
     }
 }
 
@@ -258,20 +259,28 @@ private struct StudioSectionPicker: View {
                             .font(.system(size: 12, weight: selection == section ? .semibold : .medium))
                     }
                     .foregroundStyle(selection == section ? AnyShapeStyle(StudioUI.accent) : AnyShapeStyle(.secondary))
-                    .padding(.horizontal, 11)
-                    .frame(height: 36)
-                    .overlay(alignment: .bottom) {
-                        Capsule()
-                            .fill(selection == section ? StudioUI.accent : Color.clear)
-                            .frame(height: 2)
+                    .padding(.horizontal, 10)
+                    .frame(height: 30)
+                    .background(selection == section ? StudioUI.mutedAccent : Color.clear,
+                                in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .stroke(selection == section ? StudioUI.accent.opacity(0.22) : .clear,
+                                    lineWidth: 1)
                     }
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(TactilePlainButtonStyle())
                 .keyboardShortcut(section.shortcut, modifiers: .command)
                 .help(section.title)
-                .animation(.easeOut(duration: 0.12), value: selection)
+                .animation(.easeOut(duration: 0.14), value: selection)
             }
+        }
+        .padding(3)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .stroke(StudioUI.separator.opacity(0.48), lineWidth: 1)
         }
     }
 
@@ -302,8 +311,11 @@ private struct ConnectionStatusPill: View {
                     .foregroundStyle(.tertiary)
             }
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(model.connectionState.isConnected ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+            .padding(.horizontal, 10)
             .frame(height: 30)
+            .background(statusColor.opacity(0.09), in: Capsule())
+            .overlay(Capsule().stroke(statusColor.opacity(0.20), lineWidth: 1))
         }
         .buttonStyle(TactilePlainButtonStyle())
         .help("Scan for the keyboard")
@@ -322,13 +334,22 @@ private struct TactilePlainButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .opacity(configuration.isPressed ? 0.65 : 1)
+            .scaleEffect(configuration.isPressed ? 0.985 : 1)
             .animation(.easeOut(duration: 0.06), value: configuration.isPressed)
     }
 }
 
 private struct StudioBackground: View {
     var body: some View {
-        StudioUI.canvas.ignoresSafeArea()
+        ZStack {
+            StudioUI.canvas
+            LinearGradient(
+                colors: [StudioUI.accent.opacity(0.025), .clear, Color.purple.opacity(0.018)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+        .ignoresSafeArea()
     }
 }
 
@@ -342,11 +363,12 @@ struct ConnectionBanner: View {
                 .font(.body.weight(.semibold))
                 .foregroundStyle(.orange)
             VStack(alignment: .leading, spacing: 3) {
-                Text(bannerTitle)
+                Text(advice.title)
                     .font(.callout.weight(.semibold))
-                Text(bannerDetail)
+                Text(advice.explanation)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
             Spacer()
             Button { model.copyCurrentError() } label: {
@@ -369,20 +391,6 @@ struct ConnectionBanner: View {
         .frame(minHeight: 62)
         .background(Color.orange.opacity(0.055))
         .overlay(alignment: .bottom) { Divider() }
-    }
-
-    private var bannerTitle: String {
-        if model.connectionState.detail?.contains("Input Monitoring") == true {
-            return "Keyboard found — permission needed"
-        }
-        return "Using Bluetooth? Plug in the USB cable"
-    }
-
-    private var bannerDetail: String {
-        if model.connectionState.detail?.contains("Input Monitoring") == true {
-            return "Allow F87 Studio in Privacy & Security → Input Monitoring, quit and reopen the app, then scan again."
-        }
-        return "Switch the F87 to wired mode, then scan again. A supported 2.4 GHz dongle can stay connected."
     }
 
     private var advice: DiagnosticAdvice {
@@ -1778,8 +1786,40 @@ struct HelpView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                PageHeader(eyebrow: "F87 Studio 4.5.0", title: "About F87 Studio",
+                PageHeader(eyebrow: "F87 Studio 4.6.0", title: "About F87 Studio",
                            subtitle: "A focused, independent macOS controller for the AULA F87 family.")
+
+                HStack(spacing: 10) {
+                    Link(destination: URL(string: "https://github.com/kmohammedsu/F87-Studio-macOS")!) {
+                        Label("GitHub Repository", systemImage: "chevron.left.forwardslash.chevron.right")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Link(destination: URL(string: "https://github.com/kmohammedsu/F87-Studio-macOS/releases/latest")!) {
+                        Label("Latest Release", systemImage: "arrow.down.circle")
+                    }
+                    .buttonStyle(.bordered)
+                    Spacer()
+                    Label("Local processing", systemImage: "lock.shield.fill")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.green)
+                }
+
+                HStack(spacing: 14) {
+                    Image(systemName: "hand.raised.fill")
+                        .font(.system(size: 20))
+                        .foregroundStyle(StudioUI.accent)
+                        .frame(width: 38, height: 38)
+                        .background(StudioUI.mutedAccent, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Private by design").font(.headline)
+                        Text("Keyboard configuration and audio levels are processed locally. F87 Studio does not collect analytics, record typing, or upload profiles.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(15)
+                .studioCard(radius: 12)
 
                 HelpRow(number: "1", title: "Use USB or a supported 2.4 GHz receiver",
                         text: "The known 3554:FA09 dongle is supported. If the app cannot configure your receiver—or you are using Bluetooth—plug in the cable and switch the keyboard to wired mode.")
