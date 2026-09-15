@@ -28,12 +28,28 @@
 
 F87 Studio brings the useful parts of AULA's Windows-only utility to macOS without copying its interface. It is a focused Mac app with live previews, safe device writes, clear permission diagnostics, and no analytics.
 
+## Everything your F87 was missing on Mac
+
+| Workspace | What it gives you |
+|---|---|
+| **Lighting** | 15 firmware effects, animated previews, brightness, speed, color, and an always-visible Apply action. |
+| **Per-key RGB** | Paint, erase, select, sample colors, create gradients, use quick designs, and undo changes across all 87 keys. |
+| **F-keys** | MacBook-style brightness, Mission Control, Spotlight, media, volume, Dictation, Focus, and configurable actions. |
+| **Profiles** | Save complete lighting designs, switch from the menu bar, and automatically apply a profile for a chosen app. |
+| **Music** | Stream an 11-band microphone visualization to the keyboard over the verified 2.4 GHz receiver protocol. |
+| **Diagnostics** | See connection health, understand permission problems, run guided fixes, and copy useful error reports. |
+
 ## Inside F87 Studio
 
 | Per-key RGB Workbench | Mac function keys |
 |---|---|
 | Paint, select, build gradients, and preview all 87 keys before applying. | Give F1–F12 MacBook-style actions that keep working over the 2.4 GHz receiver. |
 | <img src="docs/screenshots/per-key-workbench.jpg" alt="F87 Studio Per-key RGB Workbench with a spectrum design" width="100%"> | <img src="docs/screenshots/function-keys.jpg" alt="F87 Studio Mac function-key assignments and pointer-aware display brightness" width="100%"> |
+
+| Profiles | Music mode |
+|---|---|
+| Save a complete lighting setup, then switch manually or automatically when an app becomes active. | Turn nearby sound into an 11-band light show. Audio is analyzed in memory and is never recorded or transmitted. |
+| <img src="docs/screenshots/profiles.jpg" alt="F87 Studio profile library and automatic app profile controls" width="100%"> | <img src="docs/screenshots/music-mode.jpg" alt="F87 Studio Music mode with an 11-band audio visualizer" width="100%"> |
 
 ## Highlights
 
@@ -65,10 +81,20 @@ F87 Studio brings the useful parts of AULA's Windows-only utility to macOS witho
 - Read-before-write validation and post-write verification
 - One-click diagnostic copying with specific recovery guidance
 
+## Connection support
+
+| Connection | Typing | RGB configuration | Mac F-key actions |
+|---|:---:|:---:|:---:|
+| **USB wired** | Yes | Yes | Yes |
+| **2.4 GHz receiver** (`3554:FA09`) | Yes | Yes | Yes |
+| **Bluetooth** | Yes | No — AULA does not expose its control channel | Yes, while F87 Studio is running |
+
+F87 Studio is a universal app for Apple-silicon and Intel Macs running macOS 13 or later.
+
 ## Download and install
 
 1. Download `F87-Studio-macOS.zip` from the [latest release](https://github.com/kmohammedsu/F87-Studio-macOS/releases/latest), unzip it, and move **F87 Studio** to Applications.
-2. This independent community build is ad-hoc signed and is not Apple-notarized. On first launch, Control-click the app, choose **Open**, then confirm **Open**. You do not need to disable Gatekeeper.
+2. Current GitHub releases are Developer ID signed, Apple-notarized, and stapled. Open the app normally—there is no need to disable Gatekeeper.
 3. Connect by USB or the known 2.4 GHz receiver (`3554:FA09`). Bluetooth can type normally, but it does not expose the configuration channel used by the app.
 4. Allow F87 Studio under **System Settings → Privacy & Security → Input Monitoring**. macOS asks for this because AULA exposes configuration through a keyboard-class HID interface; F87 Studio does not record typing.
 5. For Mac function-key mappings, also allow **Accessibility**. The dedicated **F-keys** screen shows the listener's current state.
