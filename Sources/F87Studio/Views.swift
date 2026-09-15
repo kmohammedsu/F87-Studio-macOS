@@ -1786,7 +1786,8 @@ struct HelpView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                PageHeader(eyebrow: "F87 Studio 4.6.0", title: "About F87 Studio",
+                PageHeader(eyebrow: "F87 Studio \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")",
+                           title: "About F87 Studio",
                            subtitle: "A focused, independent macOS controller for the AULA F87 family.")
 
                 HStack(spacing: 10) {
