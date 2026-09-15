@@ -22,7 +22,18 @@
   <a href="#build-from-source">Build from source</a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/lighting-workbench.jpg" width="100%" alt="F87 Studio Lighting Workbench showing the animated AULA F87 keyboard preview">
+</p>
+
 F87 Studio brings the useful parts of AULA's Windows-only utility to macOS without copying its interface. It is a focused Mac app with live previews, safe device writes, clear permission diagnostics, and no analytics.
+
+## Inside F87 Studio
+
+| Per-key RGB Workbench | Mac function keys |
+|---|---|
+| Paint, select, build gradients, and preview all 87 keys before applying. | Give F1–F12 MacBook-style actions that keep working over the 2.4 GHz receiver. |
+| <img src="docs/screenshots/per-key-workbench.jpg" alt="F87 Studio Per-key RGB Workbench with a spectrum design" width="100%"> | <img src="docs/screenshots/function-keys.jpg" alt="F87 Studio Mac function-key assignments and pointer-aware display brightness" width="100%"> |
 
 ## Highlights
 
